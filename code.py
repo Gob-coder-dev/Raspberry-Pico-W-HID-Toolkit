@@ -6,8 +6,8 @@ import usb_hid
 import time
 
 from adafruit_hid.keyboard import Keyboard
-from adafruit_hid.keycode import Keycode  # pour GUI/R/ENTER/CTRL+A
-from keyboard_layout_win_fr import KeyboardLayout  # FR Windows (Neradoc)
+from adafruit_hid.keycode import Keycode  # for GUI/R/ENTER/CTRL+A
+from keyboard_layout_win_fr import KeyboardLayout  # FR Windows layout (Neradoc)
 
 supervisor.runtime.autoreload = False
 

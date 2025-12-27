@@ -2,6 +2,12 @@
 
 The Pico emulates a USB keyboard to trigger a Windows shutdown or type an ASCII message. Inputs use pull-down resistors; drive the pin to 3V3 to enable a mode.
 
+## Hardware used
+- Raspberry Pi Pico W
+- Micro USB cable
+- Dupont jumper wire
+- Resistor for pull-down (per input)
+
 ## Pin usage
 - `GP0`: instant shutdown (`shutdown /s /t 0`).
 - `GP1`: shutdown in 10 s, then open Notepad and type the ASCII art.
@@ -19,3 +25,4 @@ The Pico emulates a USB keyboard to trigger a Windows shutdown or type an ASCII 
    - `GP2` high: shutdown in 5 minutes.
    - `GP3` high: wait 2 s, then write the ASCII art in Notepad.
 4) LED stops blinking and the loop idles.
+
