@@ -7,6 +7,8 @@ The Pico emulates a USB keyboard to trigger a Windows shutdown or type an ASCII 
 - Micro USB cable
 - Dupont jumper wire
 - Resistor for pull-down (per input)
+![image1](https://github.com/user-attachments/assets/2eda4abf-9943-4d0f-996c-f3f7a612090e)
+![image2](https://github.com/user-attachments/assets/59bde83e-e670-4c38-8761-3cdb4eb2a399)
 
 ## Pin usage
 - `GP0`: instant shutdown (`shutdown /s /t 0`).
