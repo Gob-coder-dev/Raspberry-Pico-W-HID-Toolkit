@@ -1,6 +1,6 @@
-# Windows PC Shutdown (Raspberry Pi Pico)
+# Windows PC Shutdown / Rick Roll (Raspberry Pi Pico)
 
-The Pico emulates a USB keyboard to trigger a Windows shutdown or type an ASCII message. Inputs use pull-down resistors; drive the pin to 3V3 to enable a mode.
+The Pico emulates a USB keyboard to trigger a Windows shutdown or open a Rick Astley YouTube link in Microsoft Edge. Inputs use pull-down resistors; drive the pin to 3V3 to enable a mode.
 
 ## Hardware used
 - Raspberry Pi Pico W
@@ -18,9 +18,9 @@ The Pico emulates a USB keyboard to trigger a Windows shutdown or type an ASCII 
 
 ## Pin usage
 - `GP0`: instant shutdown (`shutdown /s /t 0`).
-- `GP1`: shutdown in 20 s, then open Notepad and type the ASCII art.
-- `GP2`: shutdown in 5 minutes (`shutdown /s /t 300`).
-- `GP3`: open Notepad and type the ASCII art only (no shutdown).
+- `GP1`: open Microsoft Edge on `https://www.youtube.com/watch?v=dQw4w9WgXcQ`.
+- `GP2`: initialized in `code.py`, but currently has no action.
+- `GP3`: initialized in `code.py`, but currently has no action.
 - `GP15` (handled in `boot.py`): if this pin is **not** high at boot, the Pico's USB mass storage is disabled. Hold `GP15` to 3V3 before plugging in if you need the drive.
 - Onboard LED: blinks during execution, then turns off when actions finish.
 
@@ -29,8 +29,7 @@ The Pico emulates a USB keyboard to trigger a Windows shutdown or type an ASCII 
 2) HID keyboard and layout are initialized.
 3) For each pin that is high (conditions are independent, they can combine):
    - `GP0` high: immediate shutdown.
-   - `GP1` high: shutdown in 20 s, wait 2 s, then write the ASCII art in Notepad.
-   - `GP2` high: shutdown in 5 minutes.
-   - `GP3` high: wait 2 s, then write the ASCII art in Notepad.
+   - `GP1` high: open Microsoft Edge with the Rick Astley YouTube URL.
+   - `GP2` and `GP3` high: no action in the current code.
 4) LED stops blinking and the loop idles.
 

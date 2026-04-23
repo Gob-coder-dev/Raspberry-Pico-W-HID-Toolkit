@@ -11,29 +11,6 @@ from keyboard_layout_win_fr import KeyboardLayout  # FR Windows layout (Neradoc)
 
 supervisor.runtime.autoreload = False
 
-
-Ascii = """
-        .+=::...........:-*+++++=
-       +=.    =    ===- ...    ...-@*
-     .#=   : -: :----=:  ..:::    : .++.
-    .#:   ... .:::::  -     -     .   +*
-   :*-      :*@@@@:*#=.     .:++++:   .#:.
- :+*:#%%+=+ ++++@*+=.=+.  .=%+++++-:.==-.*=
-=+*.*=.=+.-=#*%::    .     %+   =-++:-*. +%
-%=*.#::#*#=::      :==-     +*- :--.@.  .+%
--#-.+-:+#.::**+++:.-* =::  .-+=  = =##:::%-
- =@:    +@#@+#.   =@@@=.  -+    -@@=@%. @-
-  .++.   .+-+%***=+#:-..@.-=%+--%-=*%%. %
-    -#    .=%- .::@+*@##@###@%#@@@@@@%. %
-     =%:     ++-.#*    *=**#@*#@*@#@+*  %
-       =++:.: --=+.+++=%   %-:*%+@**=   %
-         :=#*.:=.:=...::::::::::...-  . %:
-            :++==---. --:::-.   .=....: %-
-                ::-++:::   ..       .  -#.
-                     =%%%#-..       ..*#
-                            =++++++++
-"""
-
 # --- LED onboard ---
 led = digitalio.DigitalInOut(board.LED)
 led.direction = digitalio.Direction.OUTPUT
@@ -65,18 +42,16 @@ def shutdown(kbd, layout, timeShutdown = 0):
     time.sleep(0.3)
     kbd.send(Keycode.ENTER)
 
-def write_ascii(kbd, layout):
+def rick_roll(kbd, layout, text):
     # notepad + Enter
     kbd.send(Keycode.GUI, Keycode.R)
     time.sleep(0.3)
-    layout.write("notepad")
+    layout.write("msedge https://streamable.com/lf027o")
     kbd.send(Keycode.ENTER)
     time.sleep(1.0)
 
     # write ASCII art
-    layout.write("I got you !")
-    kbd.send(Keycode.ENTER)
-    layout.write(Ascii)
+    #layout.write(text)
 
 async def main():
    
@@ -93,22 +68,9 @@ async def main():
     # Instant Shutdown on GP0
     if gp0.value:
         shutdown(kbd, layout)
-
-    # Shutdown in 10 seconds on GP1, then write ASCII art
+    
     if gp1.value:
-        shutdown(kbd, layout, timeShutdown=20)
-        await asyncio.sleep(2.0)
-        write_ascii(kbd, layout)
-
-    # Shutdown in 5 minutes on GP2
-    if gp2.value:
-        shutdown(kbd, layout, timeShutdown=300)
-
-    # ASCII art only on GP3
-    if gp3.value:
-        await asyncio.sleep(2.0)
-        write_ascii(kbd, layout)
-
+        rick_roll(kbd, layout, "Never gonna give you up\nNever gonna let you down\nNever gonna run around and desert you\nNever gonna make you cry\nNever gonna say goodbye\nNever gonna tell a lie and hurt you")
     
     await asyncio.sleep(0.6)
 
