@@ -1,35 +1,90 @@
-# Windows PC Shutdown / Rick Roll (Raspberry Pi Pico)
+# Raspberry Pi Pico W - Actions Windows via USB HID
 
-The Pico emulates a USB keyboard to trigger a Windows shutdown or open a Rick Astley YouTube link in Microsoft Edge. Inputs use pull-down resistors; drive the pin to 3V3 to enable a mode.
+Ce projet transforme un Raspberry Pi Pico W en clavier USB HID pour lancer automatiquement des actions sur un PC Windows. Le script utilise la boite `Executer` de Windows (`Win + R`) pour taper des commandes, ouvrir un lien web ou telecharger un PDF.
 
-## Hardware used
+## Ce que fait le projet
+
+Quand le Pico demarre :
+- la LED integree clignote pendant l'initialisation USB ;
+- le Pico attend que Windows detecte correctement le clavier HID ;
+- il lit l'etat des broches `GP0` a `GP3` ;
+- il execute l'action associee a chaque broche qui est a l'etat haut.
+
+Les conditions sont independantes : si plusieurs broches sont actives au demarrage, plusieurs actions peuvent s'enchainer.
+
+## Materiel utilise
+
 - Raspberry Pi Pico W
-- Micro USB cable
-- Dupont jumper wire
-- Resistor for pull-down (per input)
+- Cable micro-USB
+- Fils Dupont
+- Une resistance de pull-down par entree si necessaire dans votre montage
+
 ![image1](https://github.com/user-attachments/assets/2eda4abf-9943-4d0f-996c-f3f7a612090e)
 ![image2](https://github.com/user-attachments/assets/59bde83e-e670-4c38-8761-3cdb4eb2a399)
 
-## Initial setup (flash + copy libs)
-1) Flash CircuitPython: hold the Pico's BOOTSEL button, plug it in via USB, then drag `adafruit-circuitpython-raspberry_pi_pico_w-fr-10.0.3.uf2` onto the `RPI-RP2` drive. The board will reboot and mount as `CIRCUITPY`.
-2) Copy project files: place `boot.py` and `code.py` at the root of `CIRCUITPY`.
-3) Install required libraries: copy the `lib` folder to `CIRCUITPY` (contains `adafruit_hid/`, `asyncio/`, `adafruit_ticks.mpy`, `keyboard_layout_win_fr.py`, `keycode_win_fr.py`).
-4) Safely eject the drive, then power-cycle or reset the Pico. The device will enumerate as a USB keyboard on next boot.
+## Installation sur le Pico
 
-## Pin usage
-- `GP0`: instant shutdown (`shutdown /s /t 0`).
-- `GP1`: open Microsoft Edge on `https://www.youtube.com/watch?v=dQw4w9WgXcQ`.
-- `GP2`: initialized in `code.py`, but currently has no action.
-- `GP3`: initialized in `code.py`, but currently has no action.
-- `GP15` (handled in `boot.py`): if this pin is **not** high at boot, the Pico's USB mass storage is disabled. Hold `GP15` to 3V3 before plugging in if you need the drive.
-- Onboard LED: blinks during execution, then turns off when actions finish.
+1. Flasher CircuitPython : maintenir `BOOTSEL`, brancher le Pico, puis copier `adafruit-circuitpython-raspberry_pi_pico_w-fr-10.0.3.uf2` sur le lecteur `RPI-RP2`.
+2. Copier `boot.py` et `code.py` a la racine de `CIRCUITPY`.
+3. Copier le dossier `lib` a la racine de `CIRCUITPY`.
+4. Ejecter proprement le lecteur puis redemarrer le Pico.
 
-## Runtime flow (`code.py`)
-1) LED blinks while USB enumerates (about 2 s).
-2) HID keyboard and layout are initialized.
-3) For each pin that is high (conditions are independent, they can combine):
-   - `GP0` high: immediate shutdown.
-   - `GP1` high: open Microsoft Edge with the Rick Astley YouTube URL.
-   - `GP2` and `GP3` high: no action in the current code.
-4) LED stops blinking and the loop idles.
+## Broches et actions
 
+- `GP0` : arret immediat de Windows avec `shutdown /s /t 0`.
+- `GP1` : ouvre Microsoft Edge avec l'URL definie dans `code.py`.
+  - URL actuelle : `https://www.youtube.com/watch?v=xvFZjo5PgG0`
+- `GP2` : telecharge un PDF dans `%USERPROFILE%\Downloads\p.pdf`.
+- `GP3` : telecharge ce meme PDF puis l'ouvre avec l'application PDF par defaut.
+- `GP15` : gere dans `boot.py`.
+  - Si `GP15` n'est pas a l'etat haut au boot, le stockage USB `CIRCUITPY` est desactive.
+  - Il faut donc maintenir `GP15` a `3V3` au demarrage si vous voulez voir le lecteur USB.
+
+## Fonctions de `code.py`
+
+### `init_input(pin)`
+Configure une broche en entree avec une resistance pull-down interne. Cela permet d'avoir un etat bas stable tant que la broche n'est pas forcee a `3V3`.
+
+### `blink_task(stop_event, period=0.15)`
+Fait clignoter la LED integree tant que l'evenement `stop_event` n'a pas ete declenche. Cette tache tourne en parallele pendant l'initialisation.
+
+### `shutdown(kbd, layout, time_shutdown=0)`
+Ouvre la fenetre `Executer`, tape la commande `shutdown /s /t ...`, puis valide. Par defaut, l'arret est immediat.
+
+### `launch_weblink(kbd, layout, url)`
+Ouvre la fenetre `Executer`, tape `msedge <url>`, puis lance Microsoft Edge sur l'adresse passee en parametre.
+
+### `pdf_download(kbd, layout)`
+Ouvre la fenetre `Executer`, puis lance une commande `cmd` qui :
+- se place dans le dossier `Downloads` de l'utilisateur ;
+- telecharge le PDF configure ;
+- l'enregistre sous le nom `p.pdf`.
+
+### `pdf_download_and_open(kbd, layout)`
+Fait la meme chose que `pdf_download()`, puis ouvre le fichier telecharge avec l'application par defaut de Windows.
+
+### `main()`
+Fonction principale du script :
+- demarre le clignotement de la LED ;
+- attend que l'USB soit pret ;
+- initialise le clavier HID et le layout AZERTY ;
+- verifie les broches `GP0` a `GP3` ;
+- execute les actions correspondantes ;
+- arrete le clignotement, puis reste en attente.
+
+## Sequence d'execution
+
+1. Demarrage du Pico.
+2. LED clignotante pendant l'initialisation.
+3. Attente d'environ 2 secondes pour laisser Windows detecter le clavier USB.
+4. Lecture des broches d'entree.
+5. Execution des actions associees aux broches actives.
+6. Arret du clignotement.
+7. Boucle d'attente infinie.
+
+## Remarques utiles
+
+- Le script suppose que le PC cible accepte un clavier USB HID sans interaction supplementaire.
+- Les commandes sont tapees comme si un vrai clavier etait connecte.
+- Le layout utilise est prevu pour Windows FR (`keyboard_layout_win_fr.py`).
+- Les URLs et noms de fichiers sont definis en dur dans `code.py` et peuvent etre modifies facilement.
