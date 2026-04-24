@@ -1,2 +1,7 @@
 __pycache__/
 *.py[cod]
+.venv/
+venv/
+web/uploads/*
+!web/uploads/.gitkeep
+web/*.log
