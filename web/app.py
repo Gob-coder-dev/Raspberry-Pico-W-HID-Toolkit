@@ -3,7 +3,7 @@ from html import escape
 import os
 from pathlib import Path
 
-from flask import Flask, abort, jsonify, request, send_from_directory
+from flask import Flask, abort, jsonify, redirect, request, send_from_directory, url_for
 from werkzeug.utils import secure_filename
 
 
@@ -16,6 +16,8 @@ ALLOWED_EXTENSIONS = {"pdf", "txt"}
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_MB * 1024 * 1024
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+DELETE_PASSWORD = "1234"
 
 
 def is_allowed(filename):
@@ -67,6 +69,16 @@ def index():
   </style>
 </head>
 <body>
+<form action="/delete-all" method="post"
+      style="display:flex; gap:8px; align-items:center; margin-bottom:28px;">
+  <input type="password" name="delete_password"
+         placeholder="Mot de passe" required>
+  <button type="submit"
+          style="background:#c0392b; color:white; border:none;
+                 padding:6px 14px; border-radius:4px; cursor:pointer;">
+    🗑 Tout effacer
+  </button>
+</form>
   <h1>Pico upload</h1>
   <form action="/upload" method="post" enctype="multipart/form-data">
     <input type="file" name="file" accept=".pdf,.txt">
@@ -93,7 +105,22 @@ def upload():
     destination = UPLOAD_DIR / filename
     uploaded_file.save(destination)
 
-    return jsonify({"filename": filename, "size": destination.stat().st_size}), 201
+    return redirect(url_for("index"))
+
+@app.post("/delete-all")
+def delete_all():
+    password = request.form.get("delete_password", "")
+
+    if not DELETE_PASSWORD or password != DELETE_PASSWORD:
+        abort(401, "Mot de passe incorrect.")
+
+    deleted = 0
+    for path in UPLOAD_DIR.iterdir():
+        if path.is_file() and path.name != ".gitkeep":
+            path.unlink()
+            deleted += 1
+
+    return redirect(url_for("index"))
 
 
 @app.get("/files/<path:filename>")
