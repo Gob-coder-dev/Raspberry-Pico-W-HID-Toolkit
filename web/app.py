@@ -66,26 +66,106 @@ def index():
     form {{ display: flex; gap: 8px; align-items: center; margin-bottom: 28px; }}
     li {{ margin: 10px 0; }}
     span {{ color: #666; font-size: 0.9rem; }}
+
+    #delete-btn {{
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 52px;
+      height: 52px;
+      background: #c0392b;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.4rem;
+      color: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }}
+    #delete-btn:hover {{ background: #a93226; }}
+
+    #modal-overlay {{
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      justify-content: center;
+      align-items: center;
+    }}
+    #modal-overlay.open {{ display: flex; }}
+    #modal {{
+      background: white;
+      padding: 28px 32px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-width: 280px;
+    }}
+    #modal h3 {{ margin: 0; }}
+    #modal input {{
+      padding: 8px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }}
+    #modal-actions {{ display: flex; gap: 8px; justify-content: flex-end; }}
+    #modal-actions button {{ padding: 7px 16px; border: none; border-radius: 5px; cursor: pointer; font-size: 0.95rem; }}
+    #btn-confirm {{ background: #c0392b; color: white; }}
+    #btn-cancel  {{ background: #eee; }}
   </style>
 </head>
 <body>
-<form action="/delete-all" method="post"
-      style="display:flex; gap:8px; align-items:center; margin-bottom:28px;">
-  <input type="password" name="delete_password"
-         placeholder="Mot de passe" required>
-  <button type="submit"
-          style="background:#c0392b; color:white; border:none;
-                 padding:6px 14px; border-radius:4px; cursor:pointer;">
-    🗑 Tout effacer
-  </button>
-</form>
   <h1>Pico upload</h1>
   <form action="/upload" method="post" enctype="multipart/form-data">
     <input type="file" name="file" accept=".pdf,.txt">
     <button type="submit">Upload</button>
   </form>
-  <h2>Fichiers recus</h2>
+  <h2>Fichiers reçus</h2>
   <ul>{rows}</ul>
+
+  <!-- Bouton fixe -->
+  <button id="delete-btn" title="Effacer tous les fichiers" onclick="openModal()">🗑</button>
+
+  <!-- Modale -->
+  <div id="modal-overlay">
+    <div id="modal">
+      <h3>🗑 Effacer tous les fichiers</h3>
+      <input type="password" id="modal-pwd" placeholder="Mot de passe" autofocus>
+      <div id="modal-actions">
+        <button id="btn-cancel" onclick="closeModal()">Annuler</button>
+        <button id="btn-confirm" onclick="submitDelete()">Confirmer</button>
+      </div>
+    </div>
+  </div>
+
+  <form id="delete-form" action="/delete-all" method="post" style="display:none">
+    <input type="password" name="delete_password" id="hidden-pwd">
+  </form>
+
+  <script>
+    function openModal() {{
+      document.getElementById('modal-overlay').classList.add('open');
+      document.getElementById('modal-pwd').focus();
+    }}
+    function closeModal() {{
+      document.getElementById('modal-overlay').classList.remove('open');
+      document.getElementById('modal-pwd').value = '';
+    }}
+    function submitDelete() {{
+      const pwd = document.getElementById('modal-pwd').value;
+      if (!pwd) return;
+      document.getElementById('hidden-pwd').value = pwd;
+      document.getElementById('delete-form').submit();
+    }}
+    document.getElementById('modal-overlay').addEventListener('click', function(e) {{
+      if (e.target === this) closeModal();
+    }});
+    document.getElementById('modal-pwd').addEventListener('keydown', function(e) {{
+      if (e.key === 'Enter') submitDelete();
+      if (e.key === 'Escape') closeModal();
+    }});
+  </script>
 </body>
 </html>"""
 
